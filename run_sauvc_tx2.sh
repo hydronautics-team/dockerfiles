@@ -36,7 +36,7 @@ docker run --rm -it \
     --net=host \
     --runtime=nvidia \
     --privileged \
-    auv-rov-simulator:latest \
+    sauvc:latest \
     bash
 
 echo "Done."

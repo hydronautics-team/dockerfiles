@@ -1,21 +1,52 @@
 FROM dustynv/ros:noetic-ros-base-l4t-r32.6.1
 
 # nvidia-container-runtime
-ENV NVIDIA_VISIBLE_DEVICES \
-    ${NVIDIA_VISIBLE_DEVICES:-all}
-ENV NVIDIA_DRIVER_CAPABILITIES \
-    ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
+# ENV NVIDIA_VISIBLE_DEVICES \
+#     ${NVIDIA_VISIBLE_DEVICES:-all}
+# ENV NVIDIA_DRIVER_CAPABILITIES \
+#     ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
 
-WORKDIR /ws
+RUN apt update 
+RUN apt install -y --no-install-recommends git wget
 
-RUN apt-get update &&
-    apt-get install -y --no-install-recommends \
-        git
+# install opencv
+RUN apt install -y libopencv-dev python3-opencv
+
+RUN mkdir ws
+RUN cd ws
+
+# install pytorch
 RUN wget https://nvidia.box.com/shared/static/fjtbno0vpo676a25cgvuqc1wty0fkkg6.whl -O torch-1.10.0-cp36-cp36m-linux_aarch64.whl
-RUN sudo apt-get install python3-pip libopenblas-base libopenmpi-dev libomp-dev
+RUN apt install -y python3-pip libopenblas-base libopenmpi-dev libomp-dev
 RUN pip3 install Cython
 RUN pip3 install numpy torch-1.10.0-cp36-cp36m-linux_aarch64.whl
-RUN pip3 install torchvision==0.11.1
 
-ADD ./ /catkin_ws
-RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && cd /catkin_ws && catkin_make"
+# install torchvision
+RUN apt install -y libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev
+RUN git clone --branch v0.11.1 https://github.com/pytorch/vision torchvision
+WORKDIR /torchvision
+RUN export BUILD_VERSION=0.11.1
+RUN python3 setup.py install --user
+
+# install sauvc dependencies
+RUN ln -s /usr/lib/aarch64-linux-gnu/libboost_python-py36.so /usr/lib/aarch64-linux-gnu/libboost_python37.so
+RUN ln -s /usr/lib/aarch64-linux-gnu/libboost_python-py36.a /usr/lib/aarch64-linux-gnu/libboost_python37.a
+
+RUN mkdir -p /ws/additional_packages_ws/src
+WORKDIR /ws/additional_packages_ws/src
+RUN git clone https://github.com/ros-perception/vision_opencv.git
+RUN git clone https://github.com/ros/executive_smach.git
+RUN git clone https://github.com/ros-perception/image_common.git
+RUN git clone https://github.com/ros-drivers/usb_cam.git
+RUN git clone https://github.com/ros-visualization/executive_smach_visualization.git
+RUN git clone https://github.com/ros/actionlib.git
+
+RUN apt-get install -y libyaml-cpp-dev
+RUN /bin/bash -c "source /opt/ros/noetic/setup.bash && cd /ws/additional_packages_ws && catkin_make"
+
+WORKDIR /ws
+RUN git clone https://github.com/hidronautics/sauvc.git
+
+# # add entry
+# ADD ./entrypoint.sh /ws
+# ENTRYPOINT [ "/ws/entrypoint.sh" ]
