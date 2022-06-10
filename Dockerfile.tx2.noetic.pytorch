@@ -40,13 +40,13 @@ RUN git clone https://github.com/ros-perception/image_common.git
 RUN git clone https://github.com/ros-drivers/usb_cam.git
 RUN git clone https://github.com/ros-visualization/executive_smach_visualization.git
 RUN git clone https://github.com/ros/actionlib.git
+RUN git clone https://github.com/ros-drivers/video_stream_opencv.git
 
 RUN apt-get install -y libyaml-cpp-dev
 RUN /bin/bash -c "source /opt/ros/noetic/setup.bash && cd /ws/additional_packages_ws && catkin_make"
 
-WORKDIR /ws
-RUN git clone https://github.com/hidronautics/sauvc.git
+WORKDIR /
 
-# # add entry
-# ADD ./entrypoint.sh /ws
-# ENTRYPOINT [ "/ws/entrypoint.sh" ]
+# add entry
+ADD ./sauvc_entrypoint.sh /
+ENTRYPOINT [ "/sauvc_entrypoint.sh" ]
