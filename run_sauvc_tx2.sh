@@ -36,6 +36,7 @@ docker run --rm -it \
     --env="ROS_MASTER_URI=http://172.17.0.1:11311" \
     --net=host \
     --runtime=nvidia \
+    --device=/dev/video0 \
     --privileged \
     sauvc:latest \
     bash

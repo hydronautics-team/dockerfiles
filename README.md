@@ -34,4 +34,5 @@ In container
 ```bash
 cd sauvc
 catkin_make 
+source devel/setup.bash
 ```

@@ -32,6 +32,16 @@ RUN python3 setup.py install --user
 RUN ln -s /usr/lib/aarch64-linux-gnu/libboost_python-py36.so /usr/lib/aarch64-linux-gnu/libboost_python37.so
 RUN ln -s /usr/lib/aarch64-linux-gnu/libboost_python-py36.a /usr/lib/aarch64-linux-gnu/libboost_python37.a
 
+RUN pip3 install "numpy>=1.18.5,<1.20"
+RUN pip3 install tqdm
+RUN pip3 install pandas==1.1.0
+RUN apt-get install -y python3-requests build-essential libatlas-base-dev gfortran libfreetype6-dev
+RUN pip3 install scipy
+RUN pip3 uninstall -y pillow
+RUN pip3 install "pillow<7"
+RUN pip3 install seaborn
+RUN pip3 install "matplotlib>=3.2.2,<4"
+
 RUN mkdir -p /ws/additional_packages_ws/src
 WORKDIR /ws/additional_packages_ws/src
 RUN git clone https://github.com/ros-perception/vision_opencv.git
@@ -41,6 +51,9 @@ RUN git clone https://github.com/ros-drivers/usb_cam.git
 RUN git clone https://github.com/ros-visualization/executive_smach_visualization.git
 RUN git clone https://github.com/ros/actionlib.git
 RUN git clone https://github.com/ros-drivers/video_stream_opencv.git
+RUN git clone https://github.com/ros-perception/image_pipeline.git
+RUN mv image_pipeline/image_view/ .
+RUN rm -r image_pipeline/
 
 RUN apt-get install -y libyaml-cpp-dev
 RUN /bin/bash -c "source /opt/ros/noetic/setup.bash && cd /ws/additional_packages_ws && catkin_make"
