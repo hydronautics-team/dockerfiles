@@ -54,12 +54,20 @@ RUN git clone https://github.com/ros-drivers/video_stream_opencv.git
 RUN git clone https://github.com/ros-perception/image_pipeline.git
 RUN mv image_pipeline/image_view/ .
 RUN rm -r image_pipeline/
+RUN git clone https://github.com/ros/roslint.git
 
-RUN apt-get install -y libyaml-cpp-dev
+RUN apt-get install -y libyaml-cpp-dev graphviz-dev zbar-tools
+RUN pip3 install pygraphviz transitions
+RUN apt-get install -y libzbar-dev
+RUN git clone -b melodic-devel https://github.com/ros-drivers/zbar_ros.git
+
 RUN /bin/bash -c "source /opt/ros/noetic/setup.bash && cd /ws/additional_packages_ws && catkin_make"
 
+#
+# setup entrypoint
+#
+COPY ./packages/sauvc_entrypoint.sh /sauvc_entrypoint.sh
+RUN echo 'source /ws/additional_packages_ws/devel/setup.bash' >> /root/.bashrc
+ENTRYPOINT ["/sauvc_entrypoint.sh"]
+CMD ["bash"]
 WORKDIR /
-
-# add entry
-ADD ./sauvc_entrypoint.sh /
-ENTRYPOINT [ "/sauvc_entrypoint.sh" ]

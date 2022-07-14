@@ -10,7 +10,11 @@ sudo docker build -t sauvc -f Dockerfile.tx2.noetic.pytorch .
 ```
 
 ## Run [sauvc](https://github.com/hidronautics/sauvc) on Jetson TX2
+Build container:
 
+```bash
+sudo docker build -t sauvc -f Dockerfile.tx2.noetic.pytorch .
+```
 First, clone sauvc repo
 
 ```bash
