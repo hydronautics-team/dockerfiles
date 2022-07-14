@@ -37,6 +37,7 @@ docker run --rm -it \
     --net=host \
     --runtime=nvidia \
     --device=/dev/video0 \
+    --device=/dev/video2 \
     --privileged \
     sauvc:latest \
     bash
