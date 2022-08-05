@@ -60,6 +60,8 @@ RUN apt-get install -y libyaml-cpp-dev graphviz-dev zbar-tools
 RUN pip3 install pygraphviz transitions
 RUN apt-get install -y libzbar-dev
 RUN git clone -b melodic-devel https://github.com/ros-drivers/zbar_ros.git
+RUN git clone -b ros1-releases https://github.com/fkie/async_web_server_cpp.git
+RUN git clone -b master https://github.com/RobotWebTools/web_video_server.git
 
 RUN /bin/bash -c "source /opt/ros/noetic/setup.bash && cd /ws/additional_packages_ws && catkin_make"
 
