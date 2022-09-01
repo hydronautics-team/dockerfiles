@@ -39,6 +39,7 @@ docker run --rm -it \
     --runtime=nvidia \
     --device=/dev/video0 \
     --device=/dev/video2 \
+    --device=/dev/ttyS0 \
     -p 8080:8080 \
     --privileged \
     sauvc:latest \
