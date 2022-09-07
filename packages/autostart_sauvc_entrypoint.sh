@@ -9,7 +9,7 @@ source "$additional_packages_env_setup"
 echo "ROS_ROOT   $ROS_ROOT"
 echo "ROS_DISTRO $ROS_DISTRO"
 
-cd sauvc && catkin_make
+cd sauvc && catkin_make -DCATKIN_BLACKLIST_PACKAGES="stingray_gazebo_communication"
 
 sauvc_env_setup="/sauvc/devel/setup.bash"
 echo "sourcing   $sauvc_env_setup"
