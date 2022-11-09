@@ -31,6 +31,7 @@ docker run --rm -it \
     --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
     --env="XAUTHORITY=$XAUTH" \
     --volume="$XAUTH:$XAUTH" \
+    -v /home/hydro/bagholder:/bagholder \
     -v /home/hydro/sauvc:/sauvc \
     -v /home/hydro/stingray_video_records:/root/stingray_video_records \
     --env="ROS_IP=172.17.0.1" \
