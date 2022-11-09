@@ -2,6 +2,7 @@
 
 docker run -dit --restart unless-stopped \
     --name="sauvc_container" \
+    -v /home/hydro/bagholder:/bagholder \
     -v /home/hydro/sauvc:/sauvc \
     -v /home/hydro/stingray_video_records:/root/stingray_video_records \
     -v /dev/v4l/by-path:/dev/v4l/by-path \
