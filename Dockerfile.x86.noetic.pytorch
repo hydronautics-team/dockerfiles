@@ -1,4 +1,4 @@
-FROM dustynv/ros:noetic-ros-base-l4t-r32.6.1
+FROM ros:noetic
 
 # nvidia-container-runtime
 # ENV NVIDIA_VISIBLE_DEVICES \
@@ -7,7 +7,7 @@ FROM dustynv/ros:noetic-ros-base-l4t-r32.6.1
 #     ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
 
 RUN apt update 
-RUN apt install -y --no-install-recommends git wget
+RUN apt install -y --no-install-recommends git wget curl
 
 # install opencv
 RUN apt install -y libopencv-dev python3-opencv
@@ -16,10 +16,10 @@ RUN mkdir ws
 RUN cd ws
 
 # install pytorch
-RUN wget https://nvidia.box.com/shared/static/fjtbno0vpo676a25cgvuqc1wty0fkkg6.whl -O torch-1.10.0-cp36-cp36m-linux_aarch64.whl
 RUN apt install -y python3-pip libopenblas-base libopenmpi-dev libomp-dev
+RUN pip3 install torch==1.10.0+cpu torchvision==0.11.0+cpu torchaudio==0.10.0 -f https://download.pytorch.org/whl/torch_stable.html
 RUN pip3 install Cython
-RUN pip3 install numpy torch-1.10.0-cp36-cp36m-linux_aarch64.whl
+RUN pip3 install numpy torch-1.10.0%2Bcpu-cp38-cp38-linux_x86_64.whl
 
 # install torchvision
 RUN apt install -y libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev
@@ -28,9 +28,12 @@ WORKDIR /torchvision
 RUN export BUILD_VERSION=0.11.1
 RUN python3 setup.py install --user
 
+
 # install sauvc dependencies
-RUN ln -s /usr/lib/aarch64-linux-gnu/libboost_python-py36.so /usr/lib/aarch64-linux-gnu/libboost_python37.so
-RUN ln -s /usr/lib/aarch64-linux-gnu/libboost_python-py36.a /usr/lib/aarch64-linux-gnu/libboost_python37.a
+# changed for x86_64
+
+RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py38.so /usr/lib/x86_64-linux-gnu/libboost_python36.so
+RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py38.a /usr/lib/x86_64-linux-gnu/libboost_python36.a
 
 RUN pip3 install "numpy>=1.18.5,<1.20"
 RUN pip3 install tqdm
@@ -41,6 +44,13 @@ RUN pip3 uninstall -y pillow
 RUN pip3 install "pillow<7"
 RUN pip3 install seaborn
 RUN pip3 install "matplotlib>=3.2.2,<4"
+
+# deep sort dependencies
+
+RUN pip3 install filterpy==1.4.5
+RUN pip3 install scikit-image==0.17.2
+RUN pip3 install lap==0.4.0
+
 
 RUN mkdir -p /ws/additional_packages_ws/src
 WORKDIR /ws/additional_packages_ws/src
@@ -56,27 +66,48 @@ RUN mv image_pipeline/image_view/ .
 RUN rm -r image_pipeline/
 RUN git clone https://github.com/ros/roslint.git
 
-RUN apt-get install -y libyaml-cpp-dev graphviz-dev zbar-tools
+
+RUN apt update
+RUN apt-get install -y libyaml-cpp-dev graphviz-dev zbar-tools 
 RUN pip3 install pygraphviz transitions
-RUN apt-get install -y libzbar-dev
+RUN apt-get install -y libzbar-dev 
 RUN git clone -b melodic-devel https://github.com/ros-drivers/zbar_ros.git
 RUN git clone -b ros1-releases https://github.com/fkie/async_web_server_cpp.git
 RUN git clone -b master https://github.com/RobotWebTools/web_video_server.git
 RUN git clone https://github.com/wjwwood/serial.git
 RUN git clone -b melodic-devel https://github.com/ros/ros_comm.git
 
-# deep sort dependencies
-RUN pip3 install filterpy==1.4.5
-RUN pip3 install scikit-image==0.17.2
-RUN pip3 install lap==0.4.0
 
-RUN /bin/bash -c "source /opt/ros/noetic/setup.bash && cd /ws/additional_packages_ws && catkin_make"
+# isolated building
+RUN /bin/bash -c "source /opt/ros/noetic/setup.bash && cd /ws/additional_packages_ws && catkin_make --only-pkg-with-deps rosnode"
+
+
+# stingray dependencies
+
+RUN sudo apt-get install -y ros-noetic-serial ros-noetic-usb-cam ros-noetic-rosbridge-server ros-noetic-image-view ros-noetic-actionlib 
+RUN sudo apt-get install -y ros-noetic-zbar-ros
+
+
+
+# gazebo installation
+
+RUN sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-stable.list'
+RUN wget https://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
+RUN sudo apt-get update
+RUN sudo apt-get install gazebo11 -y
+RUN sudo apt-get install -y ros-noetic-gazebo-ros-pkgs ros-noetic-gazebo-ros-control
+
+
+RUN /bin/bash -c "source /opt/ros/noetic/setup.bash && cd /sauvc && catkin_make && source devel/setup.bash"
+
+
 
 #
 # setup entrypoint
 #
-COPY ./packages/sauvc_entrypoint.sh /sauvc_entrypoint.sh
+
+COPY ./packages/autostart_sauvc_entrypoint.sh /autostart_sauvc_entrypoint.sh
 RUN echo 'source /ws/additional_packages_ws/devel/setup.bash' >> /root/.bashrc
-ENTRYPOINT ["/sauvc_entrypoint.sh"]
+ENTRYPOINT ["/autostart_sauvc_entrypoint.sh"]
 CMD ["bash"]
 WORKDIR /
