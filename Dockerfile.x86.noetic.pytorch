@@ -15,18 +15,11 @@ RUN apt install -y libopencv-dev python3-opencv
 RUN mkdir ws
 RUN cd ws
 
-# install pytorch
+# install pytorch and torchvision
 RUN apt install -y python3-pip libopenblas-base libopenmpi-dev libomp-dev
-RUN pip3 install torch==1.10.0+cpu torchvision==0.11.0+cpu torchaudio==0.10.0 -f https://download.pytorch.org/whl/torch_stable.html
+RUN pip3 install torch==1.10.0+cu111 torchvision==0.11.0+cu111 torchaudio==0.10.0 -f https://download.pytorch.org/whl/torch_stable.html
 RUN pip3 install Cython
-RUN pip3 install numpy torch-1.10.0%2Bcpu-cp38-cp38-linux_x86_64.whl
-
-# install torchvision
-RUN apt install -y libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev
-RUN git clone --branch v0.11.1 https://github.com/pytorch/vision torchvision
-WORKDIR /torchvision
-RUN export BUILD_VERSION=0.11.1
-RUN python3 setup.py install --user
+RUN pip3 install numpy torch-1.10.0-cp38-cp38-linux_x86_64.whl
 
 
 # install sauvc dependencies
@@ -105,7 +98,7 @@ RUN /bin/bash -c "source /opt/ros/noetic/setup.bash && cd /sauvc && catkin_make 
 #
 # setup entrypoint
 #
-
+COPY ./sauvc /sauvc
 COPY ./packages/autostart_sauvc_entrypoint.sh /autostart_sauvc_entrypoint.sh
 RUN echo 'source /ws/additional_packages_ws/devel/setup.bash' >> /root/.bashrc
 ENTRYPOINT ["/autostart_sauvc_entrypoint.sh"]
