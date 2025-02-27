@@ -1,0 +1,5 @@
+#!/bin/bash
+
+docker build -t hydronautics/usb_cam:jazzy -f Dockerfile.usb_cam-ros-jazzy .
+
+#  --push

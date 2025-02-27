@@ -1,0 +1,5 @@
+FROM hydronautics/usb_cam:jazzy
+
+RUN apt update && apt install -y --no-install-recommends ros-jazzy-zbar-ros
+
+CMD ["bash"]
